@@ -11,13 +11,10 @@ if not os.path.exists(BACKUP_DIR):
 
 
 # Configuración
-REMOTE_NAME = "CNCDrive"  # Nombre del remoto configurado en rclone
+REMOTE_NAME = "prueba2"  # Nombre del remoto configurado en rclone
 MAX_COPIAS = 5  # Número máximo de copias a mantener
-LOG_FILE = os.path.join(BACKUP_DIR, "backup.log")  # Archivo de logs
-
-
-# Lista de carpetas específicas a respaldar
-CARPETAS = ["PROYECTOS/RIGTH CONSTRUCTION"]  # Lista de carpetas que quieres respaldar
+LOG_FILE = os.path.join(script_dir, "backup.log")  # Archivo de logs
+CARPETAS = ["Partners Portal/Partners Portal - New"]  # Lista de carpetas que quieres respaldar
 
 
 # Verifica que rclone esté instalado
@@ -57,19 +54,15 @@ def copy_folder(carpeta, destino):
         else:
             log.write(f"Error al copiar '{carpeta}': {result.stderr}\n")
 
-
-# Limpiar copias antiguas
-def clean_old_backups(carpeta):
-    carpeta_backup = os.path.join(BACKUP_DIR, f"backup{carpeta}")
-    os.makedirs(carpeta_backup, exist_ok=True)
-    
-    carpetas = sorted([d for d in os.listdir(carpeta_backup) if d.startswith(carpeta)], reverse=True)
+def clean_old_backups2():
+    for carpeta in carpetas:
+        primeraCarpeta = carpeta.split("/")[0]
+    carpetas = sorted([d for d in os.listdir(BACKUP_DIR) if d.endswith(primeraCarpeta)], reverse=True)
     if len(carpetas) > MAX_COPIAS:
         for old_backup in carpetas[MAX_COPIAS:]:
-            shutil.rmtree(os.path.join(carpeta_backup, old_backup))
+            shutil.rmtree(os.path.join(BACKUP_DIR, old_backup))
             with open(LOG_FILE, "a") as log:
                 log.write(f"Eliminada copia antigua: {old_backup}\n")
-
 
 # Main script
 def main():
@@ -83,7 +76,7 @@ def main():
 
     for carpeta in CARPETAS:
         # Crear subcarpeta para los backups de cada carpeta
-        backup_subdir = os.path.join(BACKUP_DIR, f"backup_{timestamp}{carpeta}")
+        backup_subdir = os.path.join(BACKUP_DIR, f"backup_{timestamp}_{carpeta}")
         os.makedirs(backup_subdir, exist_ok=True)
         
         with open(LOG_FILE, "a") as log:
@@ -92,9 +85,8 @@ def main():
 
 
         # Limpiar copias antiguas
-        clean_old_backups(carpeta)
-
-
+        
+    clean_old_backups2()
     with open(LOG_FILE, "a") as log:
         log.write(f"[{timestamp}] Proceso completado.\n")
 
